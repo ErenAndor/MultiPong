@@ -160,9 +160,9 @@ export class Renderer {
 
             ctx.fillRect(x, y, w, h);
 
-            // Draw Info with bot indicator
-            const infoX = isHorizontal ? paddle.pos : (wall === 'left' ? infoOffset : this.ARENA_SIZE - infoOffset);
-            const infoY = isHorizontal ? (wall === 'top' ? infoOffset : this.ARENA_SIZE - infoOffset) : paddle.pos;
+            // Draw Info with bot indicator - use paddlePos for instant position
+            const infoX = isHorizontal ? paddlePos : (wall === 'left' ? infoOffset : this.ARENA_SIZE - infoOffset);
+            const infoY = isHorizontal ? (wall === 'top' ? infoOffset : this.ARENA_SIZE - infoOffset) : paddlePos;
             const rotation = wall === 'left' ? -Math.PI / 2 : (wall === 'right' ? Math.PI / 2 : 0);
             drawInfo(paddle.name, paddle.score, infoX, infoY, rotation, paddleColor);
         };

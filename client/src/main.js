@@ -36,8 +36,15 @@ document.getElementById('gameCanvas').addEventListener('mousemove', (e) => {
     } else {
         pos = (e.clientY - rect.top) * scaleY;
     }
+
     // Client-side prediction: update local position IMMEDIATELY
-    localPaddlePos = Math.max(50, Math.min(750, pos));
+    // Apply reverse effect if active (same logic as inputHandler)
+    let localPos = pos;
+    if (inputHandler.isReversed) {
+        localPos = 800 - pos; // Invert relative to center
+    }
+    localPaddlePos = Math.max(50, Math.min(750, localPos));
+
     inputHandler.updateMousePosition(pos);
 });
 

@@ -369,21 +369,27 @@ class GameEngine {
         ball.x = ARENA_SIZE / 2;
         ball.y = ARENA_SIZE / 2;
         ball.lastHitter = null;
-        const speed = BALL_SPEED;
 
-        // Ensure the ball doesn't move too horizontally (min 30 degrees from horizontal)
-        // Math.PI / 6 = 30 degrees
-        let angle;
-        const sector = Math.floor(Math.random() * 4); // 4 diagonal sectors
-        switch (sector) {
-            case 0: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12); break; // 15 to 75 deg
-            case 1: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12) + Math.PI / 2; break; // 105 to 165 deg
-            case 2: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12) + Math.PI; break; // 195 to 255 deg
-            case 3: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12) + 3 * Math.PI / 2; break; // 285 to 345 deg
-        }
+        // Pause ball for 500ms before launching
+        ball.vx = 0;
+        ball.vy = 0;
 
-        ball.vx = Math.cos(angle) * speed;
-        ball.vy = Math.sin(angle) * speed;
+        setTimeout(() => {
+            const speed = BALL_SPEED * this.speedMultiplier;
+
+            // Ensure the ball doesn't move too horizontally (min 30 degrees from horizontal)
+            let angle;
+            const sector = Math.floor(Math.random() * 4); // 4 diagonal sectors
+            switch (sector) {
+                case 0: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12); break;
+                case 1: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12) + Math.PI / 2; break;
+                case 2: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12) + Math.PI; break;
+                case 3: angle = (Math.random() * (Math.PI / 3)) + (Math.PI / 12) + 3 * Math.PI / 2; break;
+            }
+
+            ball.vx = Math.cos(angle) * speed;
+            ball.vy = Math.sin(angle) * speed;
+        }, 500);
     }
 
     /**
