@@ -12,7 +12,7 @@ export class Renderer {
         this.canvas.height = this.ARENA_SIZE;
     }
 
-    draw(state) {
+    draw(state, localPlayerWall = null, localPaddlePos = null) {
         const { balls, paddles, powerups, timeLeft } = state;
         const ctx = this.ctx;
 
@@ -116,9 +116,16 @@ export class Renderer {
 
         const drawPaddle = (wall, paddle) => {
             if (!paddle.active) return;
+
+            // Client-side prediction: use local position for local player
+            let paddlePos = paddle.pos;
+            if (wall === localPlayerWall && localPaddlePos !== null) {
+                paddlePos = localPaddlePos;
+            }
+
             const isHorizontal = wall === 'top' || wall === 'bottom';
-            const x = isHorizontal ? paddle.pos - paddle.len / 2 : (wall === 'left' ? 10 : this.ARENA_SIZE - this.PADDLE_WIDTH - 10);
-            const y = isHorizontal ? (wall === 'top' ? 10 : this.ARENA_SIZE - this.PADDLE_WIDTH - 10) : paddle.pos - paddle.len / 2;
+            const x = isHorizontal ? paddlePos - paddle.len / 2 : (wall === 'left' ? 10 : this.ARENA_SIZE - this.PADDLE_WIDTH - 10);
+            const y = isHorizontal ? (wall === 'top' ? 10 : this.ARENA_SIZE - this.PADDLE_WIDTH - 10) : paddlePos - paddle.len / 2;
             const w = isHorizontal ? paddle.len : this.PADDLE_WIDTH;
             const h = isHorizontal ? this.PADDLE_WIDTH : paddle.len;
 

@@ -12,6 +12,7 @@ const renderer = new Renderer('gameCanvas');
 let currentRoomId = null;
 let playerWall = null;
 let myCountdown = 0;
+let localPaddlePos = 400; // Client-side prediction: instant local paddle position
 
 const inputHandler = new InputHandler((pos) => {
     if (currentRoomId && myCountdown <= 0) {
@@ -35,6 +36,8 @@ document.getElementById('gameCanvas').addEventListener('mousemove', (e) => {
     } else {
         pos = (e.clientY - rect.top) * scaleY;
     }
+    // Client-side prediction: update local position IMMEDIATELY
+    localPaddlePos = Math.max(50, Math.min(750, pos));
     inputHandler.updateMousePosition(pos);
 });
 
@@ -95,7 +98,8 @@ socket.on('connect', () => {
 });
 
 socket.on('gameState', (state) => {
-    renderer.draw(state);
+    // Client-side prediction: pass local paddle position to override server-lagged position
+    renderer.draw(state, playerWall, localPaddlePos);
 
     // Sync input inversion
     const localUsername = document.getElementById('prof-name').textContent;
