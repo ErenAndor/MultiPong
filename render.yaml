@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: andorpong
+    name: pong
     env: node
     plan: free
     buildCommand: cd server && npm install && cd ../client && npm install --include=dev && npm run build
