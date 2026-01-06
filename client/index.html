@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AndorPong - 4 Player Online Pong</title>
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen">
+      <h1>AndorPong</h1>
+      <div id="auth-form" class="auth-group">
+        <input type="text" id="username-input" placeholder="Username" />
+        <input type="password" id="password-input" placeholder="Password (for persistent stats)" />
+        <div class="auth-actions">
+          <button id="login-btn">Login</button>
+          <button id="register-btn">Register</button>
+        </div>
+        <div class="divider">or</div>
+        <button id="guest-btn" class="secondary">Play as Guest (Konuk)</button>
+      </div>
+    </div>
+
+    <!-- Lobby Screen -->
+    <div id="lobby-screen" class="screen hidden">
+      <div class="lobby-layout">
+        <aside class="side-panel left">
+          <h3>Player Profile</h3>
+          <div id="player-profile">
+            <p>User: <span id="prof-name">-</span></p>
+            <p>Level: <span id="prof-level">1</span></p>
+            <p>High Score: <span id="prof-hs">0</span></p>
+            <p>Total Goals: <span id="prof-tg">0</span></p>
+            <button id="logout-btn" class="secondary" style="width: 100%; margin-top: 10px;">Logout / Exit</button>
+          </div>
+        </aside>
+
+        <main class="lobby-main">
+          <h2>Public Lobbies</h2>
+          <div class="lobby-controls">
+            <button id="create-room-btn">Create Lobby</button>
+            <button id="refresh-rooms-btn">Refresh</button>
+          </div>
+          <div id="room-list">
+            <p>Loading lobbies...</p>
+          </div>
+
+          <!-- Power-up Guide -->
+          <div class="powerup-guide">
+            <h3>⚡ Power-ups</h3>
+            <div class="powerup-grid">
+              <div class="powerup-item positive">
+                <span class="powerup-icon">⚡</span>
+                <div class="powerup-info">
+                  <strong>Speed</strong>
+                  <small>Top hızlanır (sana)</small>
+                </div>
+              </div>
+              <div class="powerup-item positive">
+                <span class="powerup-icon">↔️</span>
+                <div class="powerup-info">
+                  <strong>Size</strong>
+                  <small>Paddle büyür (sana)</small>
+                </div>
+              </div>
+              <div class="powerup-item positive">
+                <span class="powerup-icon">🛡️</span>
+                <div class="powerup-info">
+                  <strong>Shield</strong>
+                  <small>1 gol engeller (sana)</small>
+                </div>
+              </div>
+              <div class="powerup-item negative">
+                <span class="powerup-icon">🤡</span>
+                <div class="powerup-info">
+                  <strong>Fake Ball</strong>
+                  <small>Sahte top (rakiplere)</small>
+                </div>
+              </div>
+              <div class="powerup-item negative">
+                <span class="powerup-icon">🌑</span>
+                <div class="powerup-info">
+                  <strong>Blind</strong>
+                  <small>Görüş engeli (rakiplere)</small>
+                </div>
+              </div>
+              <div class="powerup-item negative">
+                <span class="powerup-icon">🔄</span>
+                <div class="powerup-info">
+                  <strong>Reverse</strong>
+                  <small>Ters kontrol (rakiplere)</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <aside class="side-panel right">
+          <h3>Top 10 Global</h3>
+          <div id="global-leaderboard">
+            <!-- Leaderboard items -->
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Create Lobby Modal -->
+    <div id="create-room-modal" class="modal hidden">
+      <div class="modal-content">
+        <h3>Create Lobby</h3>
+        <input type="text" id="new-room-id" placeholder="Lobby Name" />
+        <input type="password" id="new-room-password" placeholder="Password (Optional)" />
+        <div class="duration-control">
+          <label>Match Duration (min):</label>
+          <input type="number" id="match-duration" value="3" min="1" max="5" style="width: 60px;" />
+        </div>
+        <div class="difficulty-control">
+          <label>Bot Difficulty:</label>
+          <select id="bot-difficulty">
+            <option value="low">Low (Kolay)</option>
+            <option value="medium">Medium (Orta)</option>
+            <option value="hard" selected>Hard (Zor)</option>
+          </select>
+        </div>
+        <div class="modal-actions">
+          <button id="confirm-create-btn">Create</button>
+          <button id="cancel-create-btn">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="screen hidden">
+      <div class="game-header">
+        <span id="room-info">Lobby: ???</span>
+        <button id="leave-room-btn">Leave</button>
+      </div>
+      <div class="game-content">
+        <canvas id="gameCanvas" width="800" height="800"></canvas>
+        <div id="player-list-panel">
+          <h4>Oyuncular</h4>
+          <ul id="player-list"></ul>
+        </div>
+      </div>
+      <!-- Countdown Overlay -->
+      <div id="countdown-overlay" class="hidden">
+        <div class="countdown-content">
+          <span id="countdown-number">3</span>
+          <p>Oyuna katılıyorsunuz...</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+
+</html>
