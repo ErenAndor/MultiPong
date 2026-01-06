@@ -104,7 +104,7 @@ socket.on('gameState', (state) => {
         inputHandler.setReversed(!!localPaddle.effects.reverse);
     }
 
-    // Update player list with current effects during game
+    // Update player list with current effects during game, sorted by score
     const playersWithEffects = Object.values(state.paddles)
         .filter(p => p.active)
         .map(p => ({
@@ -112,8 +112,10 @@ socket.on('gameState', (state) => {
             wall: Object.keys(state.paddles).find(w => state.paddles[w].name === p.name),
             isBot: p.isBot,
             effects: p.effects,
+            score: p.score,
             countdown: 0
-        }));
+        }))
+        .sort((a, b) => b.score - a.score); // Sort by score descending
     ui.renderPlayerList(playersWithEffects);
 });
 

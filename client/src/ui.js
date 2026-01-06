@@ -223,14 +223,19 @@ export class UI {
 
         playerList.innerHTML = '';
 
-        // Sort: real players first, then bots
+        // Sort by score (highest first), if scores exist; otherwise by bot/player
         const sortedPlayers = [...players].sort((a, b) => {
+            // If both have scores, sort by score descending
+            if (a.score !== undefined && b.score !== undefined) {
+                return b.score - a.score;
+            }
+            // Otherwise, real players first
             if (a.isBot && !b.isBot) return 1;
             if (!a.isBot && b.isBot) return -1;
             return 0;
         });
 
-        sortedPlayers.forEach(player => {
+        sortedPlayers.forEach((player, index) => {
             const li = document.createElement('li');
 
             // Add classes based on player type
@@ -241,16 +246,35 @@ export class UI {
                 li.classList.add('is-countdown');
             }
 
-            // Player name with effects
+            // Player name with score and effects
             const nameContainer = document.createElement('div');
             nameContainer.style.display = 'flex';
             nameContainer.style.alignItems = 'center';
             nameContainer.style.gap = '4px';
 
+            // Rank indicator (1st, 2nd, etc.)
+            if (player.score !== undefined) {
+                const rankSpan = document.createElement('span');
+                rankSpan.style.fontSize = '0.8rem';
+                rankSpan.style.color = index === 0 ? '#fbbf24' : 'rgba(255,255,255,0.4)';
+                rankSpan.textContent = `${index + 1}.`;
+                nameContainer.appendChild(rankSpan);
+            }
+
             const nameSpan = document.createElement('span');
             nameSpan.className = 'player-name';
             nameSpan.textContent = player.username;
             nameContainer.appendChild(nameSpan);
+
+            // Show score if available
+            if (player.score !== undefined) {
+                const scoreSpan = document.createElement('span');
+                scoreSpan.style.fontSize = '0.75rem';
+                scoreSpan.style.color = player.score >= 0 ? '#34d399' : '#f87171';
+                scoreSpan.style.fontWeight = 'bold';
+                scoreSpan.textContent = `(${player.score})`;
+                nameContainer.appendChild(scoreSpan);
+            }
 
             // Show active effects if any
             if (player.effects) {

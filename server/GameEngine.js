@@ -6,7 +6,7 @@ const ARENA_SIZE = 800;
 const PADDLE_LENGTH = 100;
 const PADDLE_WIDTH = 10;
 const BALL_SIZE = 10;
-const BALL_SPEED = 450;
+const BALL_SPEED = 600;
 const POWERUP_SIZE = 50;
 const POWERUP_DURATION = 8000;
 const GAME_DURATION = 180; // 3 minutes
@@ -23,6 +23,12 @@ class GameEngine {
         this.interval = null;
         this.lastTimeTick = Date.now();
         this.gameTime = durationInMinutes * 60;
+        this.initialGameTime = durationInMinutes * 60; // Store initial time for speed calculations
+
+        // Progressive speed increase
+        this.speedMultiplier = 1.0;
+        this.lastSpeedIncrease = Date.now();
+        this.speedIncreaseInterval = 15000; // Increase speed every 15 seconds
 
         // Game State
         this.balls = [{ x: ARENA_SIZE / 2, y: ARENA_SIZE / 2, vx: 0, vy: 0, color: '#fff', isDecoy: false, lastHitter: null }];
@@ -102,6 +108,26 @@ class GameEngine {
         // 4. Clear Expired Power-ups
         const now = Date.now();
         this.powerups = this.powerups.filter(pu => now < pu.expiresAt);
+
+        // 5. Progressive Speed Increase (every 15 seconds, increase ball speed by 8%)
+        if (now - this.lastSpeedIncrease > this.speedIncreaseInterval) {
+            this.speedMultiplier = Math.min(2.0, this.speedMultiplier * 1.08); // Cap at 2x speed
+            this.lastSpeedIncrease = now;
+
+            // Apply speed increase to all balls
+            this.balls.forEach(ball => {
+                if (!ball.isDecoy) {
+                    const currentSpeed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                    if (currentSpeed > 0) {
+                        const newSpeed = currentSpeed * 1.08;
+                        const angle = Math.atan2(ball.vy, ball.vx);
+                        ball.vx = Math.cos(angle) * newSpeed;
+                        ball.vy = Math.sin(angle) * newSpeed;
+                    }
+                }
+            });
+            console.log(`Ball speed increased! Multiplier: ${this.speedMultiplier.toFixed(2)}x`);
+        }
 
         // 5. Move Balls
         for (let i = this.balls.length - 1; i >= 0; i--) {
@@ -200,20 +226,46 @@ class GameEngine {
             paddle.len = PADDLE_LENGTH * 1.8;
             setTimeout(() => paddle.len = PADDLE_LENGTH, 6000);
         } else if (type === 'fake') {
-            const decoy = {
-                x: ARENA_SIZE / 2,
-                y: ARENA_SIZE / 2,
-                vx: (Math.random() - 0.5) * BALL_SPEED * 1.5,
-                vy: (Math.random() - 0.5) * BALL_SPEED * 1.5,
-                color: '#ff4444',
-                isDecoy: true,
-                lastHitter: null
+            // Fake ball goes towards OTHER players (the wall parameter is one of the opponents)
+            // Get wall center coordinates for target
+            const targetPositions = {
+                top: { x: ARENA_SIZE / 2, y: 0 },
+                bottom: { x: ARENA_SIZE / 2, y: ARENA_SIZE },
+                left: { x: 0, y: ARENA_SIZE / 2 },
+                right: { x: ARENA_SIZE, y: ARENA_SIZE / 2 }
             };
-            this.balls.push(decoy);
-            setTimeout(() => {
-                const idx = this.balls.indexOf(decoy);
-                if (idx > -1) this.balls.splice(idx, 1);
-            }, 6000);
+
+            // Find active opponents (not the last hitter)
+            const lastHitter = ball ? ball.lastHitter : null;
+            const opponents = Object.keys(this.paddles).filter(w =>
+                w !== lastHitter && this.paddles[w].active
+            );
+
+            if (opponents.length > 0) {
+                // Pick a random opponent
+                const targetWall = opponents[Math.floor(Math.random() * opponents.length)];
+                const target = targetPositions[targetWall];
+
+                // Calculate angle towards target with some randomness
+                const angleToTarget = Math.atan2(target.y - ARENA_SIZE / 2, target.x - ARENA_SIZE / 2);
+                const randomOffset = (Math.random() - 0.5) * 0.5; // +/- ~15 degrees
+                const finalAngle = angleToTarget + randomOffset;
+
+                const decoy = {
+                    x: ARENA_SIZE / 2,
+                    y: ARENA_SIZE / 2,
+                    vx: Math.cos(finalAngle) * BALL_SPEED * 1.3,
+                    vy: Math.sin(finalAngle) * BALL_SPEED * 1.3,
+                    color: '#ff4444',
+                    isDecoy: true,
+                    lastHitter: null
+                };
+                this.balls.push(decoy);
+                setTimeout(() => {
+                    const idx = this.balls.indexOf(decoy);
+                    if (idx > -1) this.balls.splice(idx, 1);
+                }, 6000);
+            }
         } else if (type === 'blind') {
             paddle.effects.blind = true;
             setTimeout(() => delete paddle.effects.blind, 4000);
@@ -284,6 +336,11 @@ class GameEngine {
                         this.paddles[ball.lastHitter].score += 1;
                     }
                     paddle.score -= 1; // Penalty for missing
+
+                    // Clear blind effect on goal conceded
+                    if (paddle.effects.blind) {
+                        delete paddle.effects.blind;
+                    }
 
                     this.resetBall(ball);
                     this.io.to(this.roomId).emit('gameEvent', {
